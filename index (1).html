@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Muthavval Avval Portal</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        :root { --primary: #044e33; --secondary: #b45309; --gold: #eab308; --bg: #f0f4f1; --surface: #ffffff; --text: #1f2937; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background-color: var(--bg); margin: 0; padding: 0; color: var(--text); -webkit-tap-highlight-color: transparent; }
+        .app-container { max-width: 500px; margin: 0 auto; background: var(--surface); min-height: 100vh; display: flex; flex-direction: column; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.08); }
+        .main-content { flex: 1; padding: 20px; padding-bottom: 40px; }
+        
+        .islamic-header { background: linear-gradient(135deg, #033928, #05543a); color: white; text-align: center; padding: 35px 15px; border-bottom: 5px solid var(--gold); border-radius: 0 0 30px 30px; position: relative; box-shadow: 0 5px 15px rgba(3,57,40,0.15); }
+        .mosque-graphic { font-size: 42px; margin-bottom: 5px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
+        .main-title { font-size: 28px; font-weight: 800; color: #ffffff; margin: 5px 0; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        .motto { font-size: 16px; font-weight: bold; color: #fef08a; margin-top: 8px; direction: rtl; }
+        .motto-en { font-size: 12px; font-weight: 500; opacity: 0.95; color: #ffffff; margin-top: 4px; display: block; }
+        .auth-indicator { position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.18); padding: 6px 14px; border-radius: 20px; font-size: 11px; color: white; font-weight: bold; cursor: pointer; border: 1px solid rgba(255,255,255,0.25); }
+        
+        .portal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 30px; }
+        .portal-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 25px 12px; text-align: center; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; border-bottom: 4px solid #cbd5e1; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+        .portal-card:active { transform: scale(0.96); }
+        .portal-card:hover { border-color: var(--primary); }
+        .card-icon { font-size: 36px; margin-bottom: 12px; width: 65px; height: 62px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: #f0fdf4; border: 1px solid #d1fae5; }
+        .card-title { font-size: 15px; font-weight: 800; color: var(--primary); letter-spacing: 0.5px; }
+        .card-desc { font-size: 11px; color: #6b7280; margin-top: 5px; line-height: 1.3; }
+        .arrow-circle-btn { width: 26px; height: 26px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; margin-top: 15px; box-shadow: 0 2px 4px rgba(4,78,51,0.2); }
+        
+        .page { display: none; margin-top: 20px; }
+        .page.active { display: block; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px; }
+        .page-header h3 { margin: 0; color: var(--primary); font-size: 18px; font-weight: bold; }
+        .btn-back { background: #6c757d; color: white; border: none; padding: 6px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; }
+        
+        .admin-form-block { background: #fffbeb; border: 1px solid #fef3c7; padding: 15px; border-radius: 12px; margin-bottom: 15px; display: none; }
+        .admin-form-block.visible { display: block; }
+        .input-box { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px; margin-bottom: 10px; background: white; }
+        .btn-submit { background: var(--primary); color: white; border: none; padding: 11px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .btn-action-tab { background: #e2e8f0; color: var(--text); border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 13px; cursor: pointer; text-align: center; flex: 1; }
+        .btn-action-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+        
+        .data-list-item { background: #ffffff; border: 1px solid #e2e8f0; padding: 14px 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.01); }
+        .profile-card { background: #fffdf5; border: 1px solid #fef3c7; padding: 22px; border-radius: 16px; margin-top: 15px; }
+        .details-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #edf2f7; font-size: 14px; }
+        .details-label { font-weight: bold; color: #555; }
+        .details-val { font-weight: 600; color: var(--primary); }
+        
+        .table-wrapper { overflow-x: auto; margin-top: 10px; }
+        .report-table { width: 100%; border-collapse: collapse; font-size: 12px; background: white; }
+        .report-table th, .report-table td { padding: 10px 6px; border: 1px solid #cbd5e1; text-align: center; }
+        .report-table th { background: var(--primary); color: white; font-weight: bold; }
+        .report-table td:first-child { text-align: left; font-weight: 600; background: #f8fafc; }
+        .attendance-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 5px; border-bottom: 1px solid #edf2f7; }
+        .checkbox-custom { width: 26px; height: 26px; cursor: pointer; }
+        .preview-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 10px; margin-top: 15px; }
+        
+        .noti-dot { width: 10px; height: 10px; background: #dc2626; border-radius: 50%; position: absolute; top: 12px; right: 15px; animation: blinker 1.2s infinite; display: none; }
+        @keyframes blinker { 0% { opacity: 0; } 50% { opacity: 1; } 100% { opacity: 0; } }
+        .notice-card { background: #fffdf5; border-left: 5px solid var(--secondary); padding: 15px; border-radius: 0 12px 12px 0; position: relative; margin-bottom: 10px; }
+        .notice-time { font-size: 11px; color: #6b7280; font-weight: bold; margin-bottom: 5px; }
+        .notice-text { font-size: 14px; font-weight: 500; color: var(--text); }
+        .bar-container { background: #e2e8f0; border-radius: 10px; height: 14px; width: 100%; position: relative; margin-top: 5px; overflow: hidden; }
+        .bar-fill { background: var(--primary); height: 100%; width: 0%; }
+        iframe { width: 100%; height: 420px; border: 1px solid #cbd5e1; border-radius: 10px; }
+    </style>
+ 
+
+    </script>
+</head>
+
+</head>
+<body>
+
+<div class="app-container">
+    <div class="islamic-header">
+        <div class="auth-indicator" id="auth-btn" onclick="handleAuthToggle()">🔒 GUEST LOGIN</div>
+        <div class="mosque-graphic">  🕌  </div>
+        <div class="main-title">MUTHAVVAL AVVAL</div>
+        <div class="motto">وقل رب زدني علما <span class="motto-en">And say, My Lord, increase me in knowledge</span></div>
+    </div>
+
+    <div class="main-content">
+        <!-- Dashboard Hub Matrix Grid Layout -->
+        <div id="page-hub" class="page active">
+            <div class="portal-grid">
+                <!-- Row 1 -->
+                <div class="portal-card" onclick="openPage('page-teachers')">
+                    <div class="card-icon">👨‍🏫</div>
+                    <div class="card-title">TEACHERS</div>
+                    <div class="card-desc">Asatidha Directory Profiles</div>
+                    <div class="arrow-circle-btn">➔</div>
+                </div>
+                <div class="portal-card" onclick="openPage('page-students')">
+                    <div class="card-icon">👥</div>
+                    <div class="card-title">STUDENTS</div>
+                    <div class="card-desc">Profiles & Directory Address Index</div>
+                    <div class="arrow-circle-btn">➔</div>
+                </div>
+                <!-- Row 2 -->
+                <div class="portal-card" onclick="openPage('page-attendance')">
+                    <div class="card-icon">📝</div>
+                    <div class="card-title">ATTENDANCE</div>
+                    <div class="card-desc">Daily Registration Logs</div>
+                    <div class="arrow-circle-btn">➔</div>
+                </div>
+                <div class="portal-card" onclick="openPage('page-timetable')">
+                    <div class="card-icon">📅</div>
+                    <div class="card-title">TIMETABLE</div>
+                    <div class="card-desc">Master Class Schedule Layout</div>
+                    <div class="arrow-circle-btn">➔</div>
+                </div>
+                <!-- Row 3 -->
+                <div class="portal-card" onclick="openPage('page-updates')">
+                    <div class="noti-dot" id="hub-alert-dot"></div>
+                    <div class="card-icon">📢</div>
+                    <div class="card-title">UPDATION</div>
+                    <div class="card-desc">Official Announcements Board</div>
+                    <div class="arrow-circle-btn">➔</div>
+                </div>
+                <div class="portal-card" onclick="openPage('page-library')">
+                    <div class="card-icon">📚</div>
+                    <div class="card-title">المكتبة</div>
+                    <div class="card-desc">Kithab PDF Library Assets</div>
+                    <div class="arrow-circle-btn">➔</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Teachers section -->
+        <div id="page-teachers" class="page">
+            <div class="page-header">
+                <h3>👨‍🏫 Asatidha Teachers</h3>
+                <button class="btn-back" onclick="openHub()">Main Hub</button>
+            </div>
+            <div id="teachers-list-container"></div>
+        </div>
+
+        <!-- Students list viewport -->
+        <div id="page-students" class="page">
+            <div class="page-header">
+                <h3>👥 Students List</h3>
+                <button class="btn-back" onclick="openHub()">Main Hub</button>
+            </div>
+            <div id="students-list-container"></div>
+        </div>
+
+        <!-- Profile display page -->
+        <div id="page-student-profile" class="page">
+            <div class="page-header">
+                <h3>📋 Profile Record</h3>
+                <button class="btn-back" onclick="openPage('page-students')">Back</button>
+            </div>
+            <div class="profile-card" id="profile-card-output"></div>
+            
+            <!-- Dynamic Inline Profile Address Editor (Admin Mode Exclusive) -->
+            <div class="admin-form-block" id="admin-profile-editor-block" style="margin-top: 15px;">
+                <h4>📝 Edit Profile & Address Details</h4>
+                <input type="text" id="edit-house" placeholder="House Name" class="input-box">
+                <input type="text" id="edit-place" placeholder="Place" class="input-box">
+                <input type="text" id="edit-pin" placeholder="Pin Code" class="input-box">
+                <input type="text" id="edit-phone" placeholder="Phone Number" class="input-box">
+                <button class="btn-submit" onclick="saveStudentProfileChanges()">Save Profile Updates</button>
+            </div>
+        </div>
+
+        <!-- Attendance system hub screen -->
+        <div id="page-attendance" class="page">
+            <div class="page-header">
+                <h3>📝 Attendance System</h3>
+                <button class="btn-back" onclick="openHub()">Main Hub</button>
+            </div>
+            <div style="background: #fffbeb; border: 1px solid #fef3c7; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+                <label style="font-weight: bold; font-size: 14px; color: var(--primary);">Select Target Date:</label>
+                <input type="date" id="attendance-global-date" class="input-box" style="margin-top: 8px; margin-bottom: 0;" onchange="refreshAttendanceModule()">
+            </div>
+            <h4>Select Kithab Subject:</h4>
+            <div id="periods-buttons-list" style="display:grid; gap:12px; margin-top: 10px;"></div>
+        </div>
+
+        <!-- Selected Kithab Subview Layout Page -->
+        <div id="page-period-view" class="page">
+            <div class="page-header">
+                <h3 id="period-view-title">Subject Attendance</h3>
+                <button class="btn-back" onclick="openPage('page-attendance')">Back</button>
+            </div>
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button id="tab-btn-today" class="btn-action-tab active" onclick="switchPeriodTab('today')">📋 Today's Attendance</button>
+                <button id="tab-btn-monthly" class="btn-action-tab" onclick="switchPeriodTab('monthly')">📊 Monthly Report</button>
+            </div>
+            <div id="area-today-attendance">
+                <div id="guest-attendance-display" class="preview-box" style="display:none;"></div>
+                <div id="admin-attendance-editor" style="display:none;">
+                    <div id="marking-checkboxes-container"></div>
+                    <br>
+                    <button class="btn-submit" onclick="submitPeriodAttendanceData()">💾 SUBMIT & SAVE ATTENDANCE</button>
+                </div>
+            </div>
+            <div id="area-monthly-report" style="display:none;">
+                <div style="margin-bottom: 12px; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;">
+                    <label><strong>Select Month:</strong></label>
+                    <input type="month" id="report-month-picker" class="input-box" style="margin-top:5px; margin-bottom:10px;" onchange="renderPeriodMonthlyTable()">
+                    <div class="admin-form-block" id="admin-target-config-block">
+                        <label style="font-weight:bold; font-size:12px; color:var(--secondary);">Set Target Required for this Kithab:</label>
+                        <input type="number" id="target-count-input" class="input-box" style="padding:6px; margin-top:5px;" value="24">
+                        <button class="btn-submit" style="padding:6px; font-size:12px; background:var(--secondary);" onclick="saveTargetCount()">Save Target</button>
+                    </div>
+                </div>
+                <div id="monthly-stats-header" style="background:#fffdf5; padding:10px; border-radius:8px; border:1px solid #fef3c7; font-weight:bold; font-size:13px; margin-bottom:15px;"></div>
+                <button class="btn-submit" style="background:#dc2626; margin-bottom:12px;" onclick="downloadPDFExcelReport()">📥 Download Ledger PDF Sheet</button>
+                <div class="table-wrapper" id="pdf-export-area">
+                    <div id="excel-table-placeholder"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timetable viewer layout page -->
+        <div id="page-timetable" class="page">
+            <div class="page-header">
+                <h3>📅 Master Schedule Layout</h3>
+                <button class="btn-back" onclick="openHub()">Main Hub</button>
+            </div>
+            <div class="admin-form-block" id="form-timetable-link">
+                <h5>⚙️ Sync Master Timetable URL (Admin Only)</h5>
+                <input type="url" id="input-timetable-url" placeholder="Paste Timetable URL Link..." class="input-box">
+                <button class="btn-submit" onclick="submitTimetableUrl()">Update Layout Link</button>
+            </div>
+            <div id="timetable-frame-container"></div>
+        </div>
+
+        <!-- Updations Circular Broadcast Panel Board -->
+        <div id="page-updates" class="page">
+            <div class="page-header">
+                <h3>📢 Official Announcements Board</h3>
+                <button class="btn-back" onclick="openHub()">Main Hub</button>
+            </div>
+            <div class="admin-form-block" id="form-add-note">
+                <h5>📢 Post Important Broadcast (Admin Only)</h5>
+                <textarea id="input-note-text" placeholder="Type notification message here..." class="input-box" style="height:90px; resize:vertical; font-family:inherit;"></textarea>
+                <button class="btn-submit" onclick="submitNewNote()">Publish Announcement</button>
+            </div>
+            <div class="notice-container" id="notice-board-feed"></div>
+        </div>
+
+        <!-- Library assets panel -->
+        <div id="page-library" class="page">
+            <div class="page-header">
+                <h3>📚 المكتبة - PDF Library</h3>
+                <button class="btn-back" onclick="openHub()">Main Hub</button>
+            </div>
+            <div class="admin-form-block" id="form-add-book">
+                <h5>➕ Deploy New Kitab PDF (Admin Only)</h5>
+                <input type="text" id="input-book-name" placeholder="Kitab Name" class="input-box">
+                <input type="url" id="input-book-url" placeholder="PDF Google Drive URL" class="input-box">
+                <button class="btn-submit" onclick="submitNewBook()">Deploy Book</button>
+            </div>
+            <div id="library-list-container"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const studentNames = ["ABDUL SAMAD", "ISHAK E", "ISMAYIL C.K", "FAIZ", "JUMAN", "NABEEL. M", "SHAFEEKH K V", "SWALIH MANIYUR", "ALTHAF AS", "ALTHAF K R", "AMEEN P", "FAJRAN C H", "IRSHAD.T.M", "ISMAYIL T", "JADUL HACK", "JUNAID .K.M", "RISHAD E P", "SALIH. PV KAKKAD", "SHAMMAS. P.K", "SHANID N K", "SHIBILI N O", "SINAN A P", "SWALIH KANIYAMBATTA", "MANSOOR K", "QALEELULLA C H", "SAFAL HUSAIN .TK", "SAJAD K", "SWALIH PULLUKKARA", "SYD ASHFAQU", "ZUHAIR"];
+    const officialKithabs = [
+        { id: 1, name: "صحيح البخاري" }, { id: 2, name: "منهج البحث + علم الحديث" }, { id: 3, name: "تحفة المحتاج" }, { id: 4, name: "صحيح مسلم" }, { id: 5, name: "تحلي" }, { id: 6, name: "السراج المنير" }, { id: 7, name: "الرسالة القشيرية + العربية المعاصرة" }, { id: 8, name: "محلي" }, { id: 9, name: "التجويد" }, { id: 10, name: "الفقه المعاصر" }
+    ];
+    const teachersData = [
+        { id: 1, name: "IBRAHIM USTHAD", phone: "+919947000001" }, { id: 2, name: "SHAHEER USTHAD", phone: "+919947000002" }, { id: 3, name: "PEROD USTHAD", phone: "+919947000003" }, { id: 4, name: "SAEED USTHAD", phone: "+919947000004" }, { id: 5, name: "MUTHALIB USTHAD", phone: "+919947000005" }, { id: 6, name: "THANGAL USTHAD", phone: "+919947000006" }, { id: 7, name: "SA-ADI USTHAD", phone: "+919947000007" }, { id: 8, name: "UMAR USTHAD", phone: "+919947000008" }, { id: 9, name: "SURAQATH USTHAD", phone: "+919947000009" }, { id: 10, name: "THRIKARIPPUR USTHAD", phone: "+919947000010" }
+    ];
+
+    let isAdminMode = false;
+    const secureToken = "muthavval@admin";
+    let targetedPeriodId = null;
+    let activeTabMode = 'today';
+    let currentViewingRoll = null;
+
+    document.getElementById('attendance-global-date').valueAsDate = new Date();
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    document.getElementById('report-month-picker').value = currentMonth;
+
+    window.onload = function() {
+        renderDirectoryCards();
+        refreshAttendanceModule();
+        loadLibraryModule();
+        loadNoticesModuleBoard();
+        renderTeachersModule();
+        loadTimetableFrame();
+        checkBlinkNotification();
+    };
+
+    function handleAuthToggle() {
+        if(isAdminMode) {
+            isAdminMode = false;
+            document.getElementById('auth-btn').innerText = "🔒 GUEST LOGIN";
+            toggleAdminElements(false);
+            alert("Switched to Guest Mode View.");
+        } else {
+            const secret = prompt("Enter Holder Admin Password:");
+            if(secret === secureToken) {
+                isAdminMode = true;
+                document.getElementById('auth-btn').innerText = "🔓 HOLDER ADMIN";
+                toggleAdminElements(true);
+                alert("Holder Access Unlocked.");
+            } else if(secret !== null) {
+                alert("Incorrect Password!");
+            }
+        }
+        refreshAttendanceModule(); loadLibraryModule(); loadNoticesModuleBoard(); loadTimetableFrame();
+        if(targetedPeriodId) loadPeriodTargetView(targetedPeriodId);
+        if(currentViewingRoll) viewStudentProfileRecord(currentViewingRoll);
+    }
+
+    function toggleAdminElements(status) {
+        document.getElementById('form-add-book').classList.toggle('visible', status);
+        document.getElementById('form-add-note').classList.toggle('visible', status);
+        document.getElementById('form-timetable-link').classList.toggle('visible', status);
+        document.getElementById('admin-target-config-block').classList.toggle('visible', status);
+        document.getElementById('admin-profile-editor-block').style.display = status ? 'block' : 'none';
+        document.querySelectorAll('.btn-inline-del').forEach(b => b.style.display = status ? 'block' : 'none');
+    }
+
+    function openHub() {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('page-hub').classList.add('active');
+        currentViewingRoll = null;
+    }
+
+
+        if(id === 'page-updates') {
+            localStorage.setItem('muthavvalNewAlert', 'false');
+            document.getElementById('hub-alert-dot').style.display = 'none';
+        }
+    }
+
+    function renderDirectoryCards() {
+        const container = document.getElementById('students-list-container'); container.innerHTML = "";
+        studentNames.forEach((name, idx) => {
+            const roll = idx + 1;
+            container.innerHTML += `<div class="data-list-item">
+                <span style="font-weight:600; font-size:14px;">${roll}. ${name}</span>
+                <span style="background:var(--primary); color:white; width:28px; height:28px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; font-weight:bold; font-size:12px;" onclick="viewStudentProfileRecord(${roll})">➔</span>
+            </div>`;
+        });
+    }
+
+    function viewStudentProfileRecord(roll) {
+        currentViewingRoll = roll;
+        const out = document.getElementById('profile-card-output');
+        const name = studentNames[roll - 1];
+        
+        // Read potentially edited custom address registry map
+        let customProfiles = JSON.parse(localStorage.getItem('muthavvalProfilesRegistry')) || {};
+        let profile = customProfiles[roll] || {};
+        
+        // Initial setup custom default states configuration parameters
+        let house = profile.house || (roll === 25 ? "CHANGARAPPAN" : name.split(' ')[0] + " House");
+        let place = profile.place || (roll === 25 ? "THARUVANA" : "Wayanad");
+        let pin = profile.pin || (roll === 25 ? "670645" : "670641");
+        let phone = profile.phone || (roll === 25 ? "9947466391" : "+919562" + (10000 + roll));
+
+        out.innerHTML = `
+            <div class="details-row"><span class="details-label">Full Name:</span><span class="details-val">${name}</span></div>
+            <div class="details-row"><span class="details-label">Roll No:</span><span class="details-val">${roll}</span></div>
+            <div class="details-row"><span class="details-label">House:</span><span class="details-val">${house}</span></div>
+            <div class="details-row"><span class="details-label">Place:</span><span class="details-val">${place}</span></div>
+            <div class="details-row"><span class="details-label">Pin Code:</span><span class="details-val">${pin}</span></div>
+            <div class="details-row" style="border:none; margin-top:15px;"><span class="details-label">Phone Contact:</span><a href="tel:${phone}" style="color:var(--primary); text-decoration:none; font-weight:bold;">${phone}</a></div>`;
+        
+        // Load active values to admin panel editors
+        document.getElementById('edit-house').value = house;
+        document.getElementById('edit-place').value = place;
+        document.getElementById('edit-pin').value = pin;
+        document.getElementById('edit-phone').value = phone;
+
+        document.getElementById('admin-profile-editor-block').style.display = isAdminMode ? 'block' : 'none';
+        openPage('page-student-profile');
+    }
+
+    function saveStudentProfileChanges() {
+        if(!isAdminMode || !currentViewingRoll) return;
+        let customProfiles = JSON.parse(localStorage.getItem('muthavvalProfilesRegistry')) || {};
+        
+        customProfiles[currentViewingRoll] = {
+            house: document.getElementById('edit-house').value,
+            place: document.getElementById('edit-place').value,
+            pin: document.getElementById('edit-pin').value,
+            phone: document.getElementById('edit-phone').value
+        };
+
+        localStorage.setItem('muthavvalProfilesRegistry', JSON.stringify(customProfiles));
+        alert("Student profile directory information updated successfully.");
+        viewStudentProfileRecord(currentViewingRoll);
+    }
+
+    function refreshAttendanceModule() {
+        const container = document.getElementById('periods-buttons-list'); container.innerHTML = "";
+        officialKithabs.forEach(k => {
+            container.innerHTML += `<div style="background:#fff; border:1px solid #cbd5e1; padding:15px; border-radius:12px; font-weight:bold; color:var(--primary); display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="loadPeriodTargetView(${k.id})">
+                <span style="flex:1; text-align:left; font-size:14px;">📖 ${k.name}</span>
+                <span style="color:var(--secondary); font-size:16px; font-weight:bold;">➔</span>
+            </div>`;
+        });
+        const currentSelectedDate = document.getElementById('attendance-global-date').value;
+        if(currentSelectedDate) document.getElementById('report-month-picker').value = currentSelectedDate.slice(0, 7);
+    }
+
+    function loadPeriodTargetView(pid) {
+        targetedPeriodId = pid;
+        const kObj = officialKithabs.find(x => x.id === pid);
+        document.getElementById('period-view-title').innerText = `${kObj.name}`;
+        
+        const targetMonth = document.getElementById('report-month-picker').value;
+        const targets = JSON.parse(localStorage.getItem('muthavvalV7Targets')) || {};
+        
+        const targetEl = document.getElementById('target-count-input');
+        if (targetEl) {
+            targetEl.value = targets[`${targetMonth}_${targetedPeriodId}`] || 24;
+        }
+
+        switchPeriodTab(activeTabMode);
+        openPage('page-period-view');
+    }
+
+    function switchPeriodTab(mode) {
+        activeTabMode = mode;
+        document.getElementById('tab-btn-today').classList.toggle('active', mode === 'today');
+        document.getElementById('tab-btn-monthly').classList.toggle('active', mode === 'monthly');
+        document.getElementById('area-today-attendance').style.display = mode === 'today' ? 'block' : 'none';
+        document.getElementById('area-monthly-report').style.display = mode === 'monthly' ? 'block' : 'none';
+
+        if(mode === 'today') renderPeriodTodayLayout();
+        if(mode === 'monthly') renderPeriodMonthlyTable();
+    }
+
+function renderPeriodTodayLayout() {
+    const activeDate = document.getElementById('attendance-global-date').value;
+    const guestDisplay = document.getElementById('guest-attendance-display');
+    const adminEditor = document.getElementById('admin-attendance-editor');
+
+    db.ref('attendance/' + activeDate + '/' + targetedPeriodId).once('value')
+    .then((snapshot) => {
+        const activeDayData = snapshot.val();
+        adminEditor.style.display = 'none';
+        guestDisplay.style.display = 'block';
+
+        if (!activeDayData) {
+            if (isAdminMode) {
+                adminEditor.style.display = 'block';
+                guestDisplay.style.display = 'none';
+                setupCheckboxes(null);
+            } else {
+                guestDisplay.innerHTML = `<h4 style="color:#dc2626; text-align:center; margin:15px 0; font-weight:bold;">No Updation</h4>`;
+            }
+        } else {
+            let html = `<h4 style="color:var(--primary); margin-top:0; border-bottom:1px solid #cbd5e1; padding-bottom:8px;">📅 Status Summary (${activeDate})</h4>`;
+            html += `<div style="display:grid; gap:6px;">`;
+            studentNames.forEach((name, idx) => {
+                const roll = idx + 1;
+                const isP = activeDayData[roll] === 'P';
+                html += `<div style="display:flex; justify-content:space-between; padding:8px 5px; background:${isP?'#f0fdf4':'#fef2f2'}; border-radius:6px; font-size:13px;">
+                    <span><strong>${roll}.</strong> ${name}</span>
+                    <span style="font-weight:bold; color:${isP?'green':'red'};">${isP?'PRESENT':'ABSENT'}</span>
+                </div>`;
+            });
+            html += `</div>`;
+            if (isAdminMode) {
+                html += `<br><button class="btn-submit" style="background:var(--secondary);" onclick="enableAdminEditMode()">📝 Edit Attendance</button>`;
+            }
+            guestDisplay.innerHTML = html;
+            setupCheckboxes(activeDayData);
+        }
+    });
+}
+
+
+    function setupCheckboxes(activeDayData) {
+        const container = document.getElementById('marking-checkboxes-container'); container.innerHTML = "";
+        studentNames.forEach((name, idx) => {
+            const roll = idx + 1; const isMarkedPresent = activeDayData ? (activeDayData[roll] === 'P') : false;
+            container.innerHTML += `<div class="attendance-row">
+                <span><strong>${roll}.</strong> ${name}</span>
+                <input type="checkbox" class="checkbox-custom" id="mark-chk-${roll}" ${isMarkedPresent ? 'checked' : ''}>
+            </div>`;
+        });
+    }
+
+    function enableAdminEditMode() {
+        document.getElementById('admin-attendance-editor').style.display = 'block';
+        document.getElementById('guest-attendance-display').style.display = 'none';
+    }
+
+    function submitPeriodAttendanceData() {
+    if(!isAdminMode) return;
+    const activeDate = document.getElementById('attendance-global-date').value;
+    
+    let attendanceData = {};
+    studentNames.forEach((name, idx) => {
+        const roll = idx + 1;
+        const chk = document.getElementById(`mark-chk-${roll}`);
+        attendanceData[roll] = chk.checked ? 'P' : 'A';
+    });
+
+    // Firebase-ലേക്ക് ഡാറ്റ സേവ് ചെയ്യുന്നു
+    db.ref('attendance/' + activeDate + '/' + targetedPeriodId).set(attendanceData)
+    .then(() => {
+        alert("Attendance synced to Cloud!");
+        renderPeriodTodayLayout();
+    })
+    .catch((error) => {
+        alert("Error: " + error.message);
+    });
+}
+
+
+        studentNames.forEach((name, idx) => {
+            const roll = idx + 1; const chk = document.getElementById(`mark-chk-${roll}`);
+            storedDb[activeDate][targetedPeriodId][roll] = chk.checked ? 'P' : 'A';
+        });
+        localStorage.setItem('muthavvalV7DB', JSON.stringify(storedDb));
+        alert("Attendance saved successfully.");
+        renderPeriodTodayLayout();
+    }
+
+    function saveTargetCount() {
+        if(!isAdminMode) return;
+        const selectedMonth = document.getElementById('report-month-picker').value;
+        const targetVal = document.getElementById('target-count-input').value;
+        if(!selectedMonth || !targetVal) return;
+
+        let targets = JSON.parse(localStorage.getItem('muthavvalV7Targets')) || {};
+        targets[`${selectedMonth}_${targetedPeriodId}`] = Number(targetVal);
+        localStorage.setItem('muthavvalV7Targets', JSON.stringify(targets));
+        alert("Monthly target saved successfully.");
+        renderPeriodMonthlyTable();
+    }
+
+    function renderPeriodMonthlyTable() {
+        const targetMonth = document.getElementById('report-month-picker').value;
+        const storedDb = JSON.parse(localStorage.getItem('muthavvalV7DB')) || {};
+        const targets = JSON.parse(localStorage.getItem('muthavvalV7Targets')) || {};
+
+        const requiredTarget = targets[`${targetMonth}_${targetedPeriodId}`] || 24;
+        
+        const targetEl = document.getElementById('target-count-input');
+        if (targetEl) { targetEl.value = requiredTarget; }
+        
+        let totalConductedCount = 0;
+        Object.keys(storedDb).forEach(date => {
+            if(date.startsWith(targetMonth) && storedDb[date][targetedPeriodId]) totalConductedCount++;
+        });
+
+        document.getElementById('monthly-stats-header').innerHTML = `
+            🎯 Total Target Required: ${requiredTarget} Classes<br>
+            📊 Total Conducted: ${totalConductedCount} Classes
+        `;
+
+        const placeholder = document.getElementById('excel-table-placeholder');
+        let matrixTableHtml = `<table class="report-table"><thead><tr><th>Student Name</th><th>Total Class</th><th>Present</th><th>Absent</th><th>Percentage (%)</th></tr></thead><tbody>`;
+
+        studentNames.forEach((name, idx) => {
+            const roll = idx + 1; let totalP = 0; let totalA = 0;
+            Object.keys(storedDb).forEach(date => {
+                if(date.startsWith(targetMonth) && storedDb[date][targetedPeriodId]) {
+                    if(storedDb[date][targetedPeriodId][roll] === 'P') totalP++;
+                    else if(storedDb[date][targetedPeriodId][roll] === 'A') totalA++;
+                }
+            });
+            const overallStudentSum = totalP + totalA;
+            const absolutePercentage = overallStudentSum > 0 ? ((totalP / overallStudentSum) * 100).toFixed(1) : "0.0";
+            matrixTableHtml += `<tr><td><strong>${roll}. ${name}</strong></td><td>${overallStudentSum}</td><td style="color:green; font-weight:bold;">${totalP}</td><td style="color:red; font-weight:bold;">${totalA}</td><td><div style="font-weight:bold; color:var(--primary); margin-bottom:2px;">${absolutePercentage}%</div><div class="bar-container"><div class="bar-fill" style="width: ${absolutePercentage}%"></div></div></td></tr>`;
+        });
+        placeholder.innerHTML = matrixTableHtml + `</tbody></table>`;
+    }
+
+    function downloadPDFExcelReport() {
+        const node = document.getElementById('pdf-export-area');
+        const kObj = officialKithabs.find(x => x.id === targetedPeriodId);
+        html2pdf().set({ margin: 6, filename: `${kObj.name}_Report.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }).from(node).save();
+    }
+
+    function loadLibraryModule() {
+        const container = document.getElementById('library-list-container'); container.innerHTML = "";
+        const localBooks = JSON.parse(localStorage.getItem('muthavvalV11Library')) || [{ name: "صحيح البخاري", url: "#" }];
+        localBooks.forEach((b, index) => {
+            container.innerHTML += `<div class="data-list-item"><span style="direction:rtl; font-weight:bold; color:var(--primary); text-align:right; flex:1;">${b.name}</span><div style="display:flex; align-items:center; gap:8px;"><a href="${b.url}" target="_blank" class="btn-inline-pdf">📖 Read PDF</a><button class="btn-inline-del" style="display:${isAdminMode?'block':'none'}" onclick="removeLibraryBook(${index})">✖</button></div></div>`;
+        });
+    }
+
+    function submitNewBook() {
+        if(!isAdminMode) return;
+        const name = document.getElementById('input-book-name').value; const url = document.getElementById('input-book-url').value; if(!name || !url) return;
+        let localBooks = JSON.parse(localStorage.getItem('muthavvalV11Library')) || []; localBooks.push({ name: name, url: url });
+        localStorage.setItem('muthavvalV11Library', JSON.stringify(localBooks));
+        document.getElementById('input-book-name').value = ""; document.getElementById('input-book-url').value = "";
+        loadLibraryModule(); alert("Book deployed.");
+    }
+
+    function removeLibraryBook(index) {
+        if(!isAdminMode) return;
+        let localBooks = JSON.parse(localStorage.getItem('muthavvalV11Library')); localBooks.splice(index, 1);
+        localStorage.setItem('muthavvalV11Library', JSON.stringify(localBooks)); loadLibraryModule();
+    }
+
+    function loadNoticesModuleBoard() {
+        const board = document.getElementById('notice-board-feed'); board.innerHTML = "";
+        const fallbackNotice = [{ id: 1, message: "Welcome to Muthavval Official Board.", timestamp: "System Notice" }];
+        const currentNotices = JSON.parse(localStorage.getItem('muthavvalV11Notices')) || fallbackNotice;
+        currentNotices.forEach(n => {
+            const hasDeleteBtn = isAdminMode ? `<button class="btn-inline-del" style="display:block; position:absolute; top:10px; right:10px;" onclick="deleteNoticeFromBoard(${n.id})">Delete ❌</button>` : "";
+            board.innerHTML += `<div class="notice-card"><div class="notice-time">📅 ${n.timestamp}</div><div class="notice-text">${n.message}</div>${hasDeleteBtn}</div>`;
+        });
+    }
+
+    function submitNewNote() {
+        if(!isAdminMode) return;
+        const textarea = document.getElementById('input-note-text'); if(!textarea.value.trim()) return;
+        let currentNotices = JSON.parse(localStorage.getItem('muthavvalV11Notices')) || [];
+        const timeStr = new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+        currentNotices.unshift({ id: Date.now(), message: textarea.value, timestamp: timeStr });
+        localStorage.setItem('muthavvalV11Notices', JSON.stringify(currentNotices));
+        localStorage.setItem('muthavvalNewAlert', 'true'); textarea.value = "";
+        loadNoticesModuleBoard(); checkBlinkNotification(); alert("Notice successfully broadcasted.");
+    }
+
+    function deleteNoticeFromBoard(id) {
+        if(!isAdminMode) return;
+        let currentNotices = JSON.parse(localStorage.getItem('muthavvalV11Notices')) || [];
+        currentNotices = currentNotices.filter(n => n.id !== id);
+        localStorage.setItem('muthavvalV11Notices', JSON.stringify(currentNotices)); loadNoticesModuleBoard();
+    }
+
+    function renderTeachersModule() {
+        const container = document.getElementById('teachers-list-container'); container.innerHTML = "";
+        teachersData.forEach(t => {
+            const subject = officialKithabs.find(x => x.id === t.id);
+            container.innerHTML += `<div class="data-list-item">
+                <div>
+                    <div style="font-weight:bold; color:var(--primary);">${t.name}</div>
+                    <div style="font-size:12px; color:var(--secondary); font-weight:600;">${subject ? subject.name : 'Asatidha Instructor'}</div>
+                </div>
+            </div>`;
+        });
+    }
+
+    function loadTimetableFrame() {
+        const frameBox = document.getElementById('timetable-frame-container');
+        const activeUrl = localStorage.getItem('muthavvalV5TimetableURL');
+        if(activeUrl) frameBox.innerHTML = `<iframe src="${activeUrl}"></iframe>`;
+        else frameBox.innerHTML = `<p style="text-align:center; color:#dc2626; font-weight:bold; padding:20px 0;">⚠️ No master timetable layout found.</p>`;
+    }
+
+    function submitTimetableUrl() {
+        if(!isAdminMode) return;
+        const val = document.getElementById('input-timetable-url').value;
+        localStorage.setItem('muthavvalV5TimetableURL', val);
+        alert("Master timetable layout updated."); loadTimetableFrame();
+    }
+
+    function checkBlinkNotification() {
+        const status = localStorage.getItem('muthavvalNewAlert') === 'true';
+        document.getElementById('hub-alert-dot').style.display = status ? 'block' : 'none';
+    }
+    window.addEventListener('beforeunload', function (e) {
+    e.preventDefault();
+    e.returnValue = ''; 
+});
+
+
+</script>
+</body>
+</html>
